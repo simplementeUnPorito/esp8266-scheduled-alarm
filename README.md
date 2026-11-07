@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/img/banner.svg" width="100%" alt="ESP8266 Scheduled Alarm"></p>
 
-<p align="center"><img src="https://img.shields.io/badge/ESP8266-NodeMCU-1f6feb"> <img src="https://img.shields.io/badge/NTP-time%20sync-informational"> <img src="https://img.shields.io/badge/Arduino-C%2B%2B-orange"> <img src="https://img.shields.io/badge/EasyEDA-PCB-informational"> <img src="https://img.shields.io/badge/License-MIT-lightgrey"></p>
+<p align="center"><img src="https://img.shields.io/badge/Year-2023-555"> <img src="https://img.shields.io/badge/ESP8266-NodeMCU-1f6feb"> <img src="https://img.shields.io/badge/NTP-time%20sync-informational"> <img src="https://img.shields.io/badge/Arduino-C%2B%2B-orange"> <img src="https://img.shields.io/badge/EasyEDA-PCB-informational"> <img src="https://img.shields.io/badge/License-MIT-lightgrey"></p>
 <p align="center"><a href="#english">English</a> · <a href="#español">Español</a></p>
 
 ## English
