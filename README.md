@@ -6,7 +6,7 @@
 ## English
 
 ### Overview
-An alarm controller built around an ESP8266 (NodeMCU) that keeps wall-clock time from an NTP server over Wi-Fi, applies a user-defined daylight-saving window, and switches an output on and off on a daily schedule. It is configured at run time through a text command interface on the serial port. A custom board carrying the NodeMCU, an RTC module, PIR sensors, a relay, a buzzer and battery backup was designed in EasyEDA.
+This alarm controller uses an ESP8266 (NodeMCU) to obtain wall-clock time from an NTP server over Wi-Fi, apply a user-defined daylight-saving window, and switch an output on and off on a daily schedule. A text command interface on the serial port handles run-time configuration. The custom EasyEDA board carries the NodeMCU, an RTC module, PIR sensors, a relay, a buzzer and battery backup.
 
 ### Features
 - Time from `pool.ntp.org` via the `NTPClient` library, fixed offset UTC-3 (`-10800 s`).
@@ -83,7 +83,7 @@ MIT, see [LICENSE](LICENSE).
 ## Español
 
 ### Descripción
-Controlador de alarma basado en un ESP8266 (NodeMCU) que obtiene la hora de un servidor NTP por Wi-Fi, aplica una ventana de horario de verano definida por el usuario y activa/desactiva una salida según un horario diario. Se configura en ejecución mediante comandos de texto por el puerto serie. En EasyEDA se diseñó una placa propia con el NodeMCU, módulo RTC, sensores PIR, relé, buzzer y respaldo de batería.
+Este controlador de alarma usa un ESP8266 (NodeMCU) para obtener la hora de un servidor NTP por Wi-Fi, aplicar una ventana de horario de verano definida por el usuario y activar o desactivar una salida según un horario diario. Los comandos de texto por el puerto serie permiten configurarlo en ejecución. La placa diseñada en EasyEDA incluye el NodeMCU, un módulo RTC, sensores PIR, un relé, un buzzer y respaldo de batería.
 
 ### Características
 - Hora desde `pool.ntp.org` con la librería `NTPClient`, desfase fijo UTC-3.
