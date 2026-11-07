@@ -87,30 +87,72 @@ MIT, see [LICENSE](LICENSE).
 Este controlador de alarma usa un ESP8266 (NodeMCU) para obtener la hora de un servidor NTP por Wi-Fi, aplicar una ventana de horario de verano definida por el usuario y activar o desactivar una salida según un horario diario. Los comandos de texto por el puerto serie permiten configurarlo en ejecución. La placa diseñada en EasyEDA incluye el NodeMCU, un módulo RTC, sensores PIR, un relé, un buzzer y respaldo de batería.
 
 ### Características
-- Hora desde `pool.ntp.org` con la librería `NTPClient`, desfase fijo UTC-3.
+- Hora desde `pool.ntp.org` con la librería `NTPClient`, desfase fijo UTC-3 (`-10800 s`).
 - Horario de verano con dos fechas configurables; se suma una hora dentro del período de verano, con acarreo de día/mes/año.
 - Ventana diaria de alarma (hora de encendido y apagado), incluso cruzando la medianoche. La salida es el LED integrado (activo en bajo).
-- Reconexión Wi-Fi automática y validación de entradas con mensajes de error distintos.
+- Reconexión Wi-Fi automática en el bucle principal (20 intentos de 500 ms durante el arranque).
+- Validación de entradas con mensajes diferentes para fechas/horas inválidas y no numéricas.
+
+Interfaz serie (115200 baudios). Los valores usan `/` como separador y dos dígitos por campo:
 
 | Comando | Efecto |
 |---------|--------|
 | `set st DD/MM` | Inicio del horario de verano (el código toma el primer campo como día; el texto de ayuda dice `mm/dd`) |
 | `set wt DD/MM` | Inicio del horario de invierno |
-| `set alarm_ON hh/mm` / `set alarm_OFF hh/mm` | Hora de encendido / apagado de la alarma |
+| `set alarm_ON hh/mm` | Hora de encendido de la alarma |
+| `set alarm_OFF hh/mm` | Hora de apagado de la alarma |
 | `led ON` / `led OFF` | Control manual del LED; desactiva el horario hasta reiniciar |
-| `help` | Lista de comandos |
+| `help` | Imprime la lista de comandos (en español) |
 
 ### Sincronización horaria y horario de verano
-En cada ciclo `updateTime()` lee la hora NTP; `isSummerTime()` compara día/mes actuales con las fechas configuradas (considera el caso del hemisferio sur, donde el invierno empieza antes que el verano en el calendario); si corresponde, `addOneHour()` suma una hora. `verifyAlarm()` compara hora y minuto con el par ON/OFF y maneja el LED. La alarma permanece apagada hasta definir ambas horas.
+1. `updateTime()` se ejecuta en cada ciclo: lee el cliente NTP (tiempo epoch, convertido con `gmtime` para obtener día, mes y año) y guarda el resultado en un registro `currentDate`.
+2. Si las fechas de inicio de verano e invierno están definidas y son diferentes, `isSummerTime()` las compara con el día y mes actuales. Si la fecha de invierno aparece antes que la de verano en el calendario (caso del hemisferio sur), el horario de verano se aplica fuera del intervalo invierno-verano; en caso contrario, se aplica entre las fechas de verano e invierno.
+3. Cuando corresponde el horario de verano, `addOneHour()` adelanta la hora y propaga el acarreo al día, mes y año.
+4. `verifyAlarm()` compara la hora y el minuto con el par ON/OFF (incluido el cruce de medianoche) y controla el LED. La alarma permanece apagada hasta que ambas horas estén configuradas.
 
-### Hardware y PCB
-Componentes según el diseño EasyEDA: NodeMCU V2, módulo RTC DS3231, 3 sensores PIR AM312, 3 LED con resistencias de 330 Ω, transistor 2N2222 con buzzer, módulo relé, módulo AC-DC 5 V, cargador TP4056 y portabatería 18650. Este firmware solo usa NTP y el LED integrado. Fuentes y vistas previas en `hardware/`.
+### Hardware
+Componentes tal como se ubicaron en el diseño EasyEDA:
+
+| Componente | Función |
+|-----------|------|
+| NodeMCU V2 (ESP8266) | Wi-Fi, cliente NTP, interfaz de comandos |
+| Módulo RTC DS3231 | Huella para reloj de tiempo real en la placa |
+| 3 sensores PIR AM312 | Entradas de detección de movimiento |
+| 3 LED con resistencias de 330 Ω | Indicadores |
+| Transistor 2N2222 + buzzer | Salida audible |
+| Módulo relé | Salida conmutada |
+| Módulo AC-DC de 5 V, cargador TP4056, portabatería 18650 | Alimentación de red y respaldo de batería |
+| 2 conectores para pulsadores con resistencias | Entradas de usuario |
+
+El firmware de este repositorio utiliza solamente la fuente horaria NTP y el LED integrado; los sensores PIR, el RTC, el relé y el buzzer están presentes en la placa, pero este sketch no los controla.
+
+### PCB
+<p align="center"><img src="hardware/pcb/pcb-top.png" width="460" alt="Vista superior de la PCB"> <img src="hardware/pcb/pcb-bottom.png" width="460" alt="Vista inferior de la PCB"></p>
+
+Las vistas previas se generan a partir de las fuentes EasyEDA Standard de `hardware/easyeda/`. Consultar [`hardware/pcb/README.md`](hardware/pcb/README.md).
 
 ### Videos de demostración
-Ver los enlaces "Demo 1" y "Demo 2" arriba.
+<p align="center"><a href="https://www.youtube.com/watch?v=4bDRZ9czwoo"><img src="https://img.youtube.com/vi/4bDRZ9czwoo/mqdefault.jpg" width="320" alt="Demostración 1"></a> <a href="https://www.youtube.com/watch?v=xoXKMs6CwGw"><img src="https://img.youtube.com/vi/xoXKMs6CwGw/mqdefault.jpg" width="320" alt="Demostración 2"></a><br><sub>Demostración 1 · Demostración 2 (2023)</sub></p>
+
+### Estructura del repositorio
+```
+firmware/scheduled-alarm/   Sketch Arduino corregido en 2026 (.ino) y cabeceras
+firmware/original-2023/     Fuentes originales tal como se archivaron (no compilaban)
+  secrets.example.h         Plantilla de credenciales Wi-Fi (copiar como secrets.h)
+hardware/easyeda/           Fuentes EasyEDA Standard (esquemático, dos revisiones de PCB)
+hardware/pcb/               Vistas previas de la PCB
+```
 
 ### Primeros pasos
-Instalar el Arduino IDE con el soporte ESP8266 y la librería `NTPClient`; copiar `secrets.example.h` a `secrets.h` con la red Wi-Fi; cargar el sketch y abrir el monitor serie a 115200 baudios. `firmware/scheduled-alarm/` es la versión corregida de 2026 (compila; verificada con PlatformIO, nodemcuv2); `firmware/original-2023/` es el original tal como se archivó (no compilaba). Ver `firmware/CHANGES.md`.
+1. Instalar Arduino IDE con el paquete de placas ESP8266; seleccionar una placa NodeMCU 1.0 (ESP-12E).
+2. Instalar la biblioteca `NTPClient` (ESP8266WiFi y WiFiUdp vienen con el core).
+3. Copiar `firmware/scheduled-alarm/secrets.example.h` a `secrets.h` y completar `WIFI_SSID` y `WIFI_PASSWORD` (`secrets.h` está ignorado por Git).
+4. Cargar el programa, abrir el monitor serie a 115200 baudios y escribir `help`.
+
+Nota: `firmware/scheduled-alarm/` es la versión corregida de 2026 (compila; verificada con PlatformIO, nodemcuv2); `firmware/original-2023/` es el original tal como se archivó (no compilaba). Consultar `firmware/CHANGES.md`. El terminador de comandos que espera `readCommand()` es `\n` seguido de `\r`.
 
 ### Créditos
-Diseño y desarrollo: Elías Álvarez, Universidad Católica "Nuestra Señora de la Asunción" (Paraguay), 2023. Licencia MIT.
+Diseñado y desarrollado por Elías Álvarez en la Universidad Católica "Nuestra Señora de la Asunción" (Paraguay), 2023.
+
+### Licencia
+MIT, consultar [LICENSE](LICENSE).
