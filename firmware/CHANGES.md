@@ -18,6 +18,13 @@ Cada cambio tambien esta marcado con `// FIX 2026:` en `scheduled-alarm/`. Los n
 | 10 | functions.ino:385-395 | Debug `Serial.println` calls in `verifyAlarm()` (ran every `loop()` pass, flooding the console) commented out; alarm logic unchanged. | Los `Serial.println` de depuracion en `verifyAlarm()` (se ejecutaban en cada `loop()` y saturaban la consola) se comentaron; la logica de la alarma no cambia. |
 
 Known behaviour kept as is / Comportamiento conservado: command terminator is `
-` followed by ``; `addOneHour()` treats 29 February as valid in every year; alarm window bounds are exclusive.
+` followed by `
+`; `addOneHour()` treats 29 February as valid in every year; alarm window bounds are exclusive.
 
 Verification / Verificacion: PlatformIO, board `nodemcuv2`, espressif8266 4.2.1, NTPClient 3.2.1, `secrets.example.h` as `secrets.h`: build SUCCESS, no warnings in the sketch files. Not tested on hardware / No probado en hardware.
+
+- `functions.ino` `addOneHour()`: 29 February is now only accepted in leap years; otherwise the date rolls to 1 March. Found in an independent review.
+- `functions.ino` `readCommand()`: commands must match the exact grammar (prefix + `dd/mm` or `hh/mm` where required + terminator); trailing characters such as `helpXYZ` are rejected. Found in an independent review.
+
+- `functions.ino` `addOneHour()`: el 29 de febrero solo se acepta en años bisiestos; si no, la fecha pasa al 1 de marzo. Detectado en una revisión independiente.
+- `functions.ino` `readCommand()`: los comandos deben respetar la gramática exacta (prefijo + `dd/mm` o `hh/mm` cuando corresponde + terminador); se rechazan caracteres sobrantes como `helpXYZ`. Detectado en una revisión independiente.

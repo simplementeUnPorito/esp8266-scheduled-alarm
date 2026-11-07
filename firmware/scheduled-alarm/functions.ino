@@ -259,7 +259,10 @@ void readCommand()
       
       for(int i = 0; i<COMMAND_LIST_LEN; i++){
         //Serial.print("Comparing "); Serial.print(command);  Serial.print(" to "); Serial.print(commandList[i]);
-        if(command.substring(0,commandList[i].length()) == commandList[i]){
+        // FIX 2026: require the exact command grammar (prefix + 5-char dd/mm or hh/mm argument for the
+        // four "set" commands, nothing for the others) plus the LF terminator, so "helpXYZ" is rejected.
+        unsigned int expectedLen = commandList[i].length() + (i <= SET_ALARM_OFF ? 5 : 0) + 1;
+        if(command.substring(0,commandList[i].length()) == commandList[i] && command.length() == expectedLen){
           //Serial.println(": TRUE");
           if(selectAction(i)==true){
             updateTime();
@@ -340,6 +343,12 @@ void addOneHour()
   if(currentDate.hour>23){
     currentDate.hour = 0;
     currentDate.day++;
+  }
+  // FIX 2026: 29 February only exists in leap years; isAValidDate() does not know the year.
+  bool leap = (currentDate.year % 4 == 0 && currentDate.year % 100 != 0) || currentDate.year % 400 == 0;
+  if(currentDate.month==2 && currentDate.day==29 && !leap){
+    currentDate.day=1;
+    currentDate.month=3;
   }
   if(!isAValidDate(currentDate.day,currentDate.month)){
     currentDate.day=1;
