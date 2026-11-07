@@ -26,119 +26,31 @@
 #define NON_NUMERICAL_DATE "\t\tERROR:Non-numerical date"
 #define INVALID_TIME "\t\tERROR:Invalid time"
 #define NON_NUMERICAL_TIME "\t\tERROR:Non-numerical time"
-#define HELP_MSG "\t\tset st mm/dd: Se utiliza para configurar la fecha de inicio del horario de verano.\n\t\tset wt mm/dd: Se utiliza para configurar la fecha de inicio del horario de invierno.\n\t\tset alarm_ON hh/mm: Se configura la hora de encendido de la alarma.\n\t\tset alarm_OFF hh/mm: Se configura la hora de apagado de la alarma.\n\t\thelp: Imprime los comandos y los explica.\n\t\tled ON: enciende el led.\n\t\tled OFF: apaga el led.\n"
+// FIX 2026: help said mm/dd but the parser (isValidSetDate) reads day first, i.e. dd/mm; text now matches the code.
+#define HELP_MSG "\t\tset st dd/mm: Se utiliza para configurar la fecha de inicio del horario de verano.\n\t\tset wt dd/mm: Se utiliza para configurar la fecha de inicio del horario de invierno.\n\t\tset alarm_ON hh/mm: Se configura la hora de encendido de la alarma.\n\t\tset alarm_OFF hh/mm: Se configura la hora de apagado de la alarma.\n\t\thelp: Imprime los comandos y los explica.\n\t\tled ON: enciende el led.\n\t\tled OFF: apaga el led.\n"
 
-
-date currentDate={1,10,2023,17,30,10};
+// FIX 2026: the original had `date currentDate=...` here, before `date` existed, plus unfinished
+// `date`/`time`/`Cdate` classes (invalid `typedef short uint suint`, `void` constructors, missing
+// semicolons/parentheses, String.at()/toInt(String) that do not exist, isDate() calling nonexistent
+// code). The rest of the program only uses `date` as a plain record with public fields
+// (aggregate init + .day/.month/.year/.hour/.min/.sec), so it is now a simple struct.
+// The unused `time` and `Cdate` classes were removed (nothing referenced them).
 typedef struct dupleInts{
   int n1;
   int n2;
 }dupleInt;
 
-
-typedef short uint suint;
-
-
-class date
+struct date
 {
-  private:
-    suint day;
-    suint month;
-    uint year;
-    void date()
-    {
-      day = 0;
-      month = 0;
-      year = 0;
-    }
-
-    bool isFormat(String s)
-    {
-      return (isDigit(s.at(0)) && isDigit(s.at(1)) && s.at(3) == '/' && isDigit(s.at(4)) && isDigit(s.at(5)));
-    }
-
-    bool isLeap(uint Year = year)
-    {
-      return ((Year % 4 == 0 && Year % 100 != 0) || Year % 400 == 0)
-    }
-    bool isMonth31(suint Month = month)
-    {
-      return (Month == 1 ||Month ==  3|| Month == 5 || Month == 7 ||Month == 8 ||Month == 10 ||Month == 12);
-    }
-
-    bool isDate(suint Day, suint Month uint Year)
-    {
-      return (2023<=Year && Month<=12) && (Month == 2 && (isLeap(Year)?Day<=29:Day<=28)) && (isMonth31(Month)?Day<=31:Day<=30);
-    }
-  public:
-    bool update(suint Day, suint Month, uint Year)
-    {
-      if(isDate(Day, Month, Year))
-      {
-        day = Day;
-        month = Month;
-        year = Year;
-        return true;
-      }
-      return false;
-    }
-    bool updateByCommand(String s)
-    {
-      if (!isFormat(s))
-        return false;
-      
-      suint Day = s.toInt(s.substring(0,1));
-      suint Month = s.toInt(s.substring(4,5);
-      return update(Day, Month, 2023);
-    }
-
-
+  unsigned short int day;
+  unsigned short int month;
+  unsigned int year;
+  unsigned short int hour;
+  unsigned short int min;
+  unsigned short int sec;
 };
 
-
-class time
-{
-  private:
-    suint hour;
-    suint min;
-    suint sec;
-    void time()
-    {
-      hour = 0;
-      min = 0;
-      sec = 0;
-    }
-
-    
-
-  public:
-    bool update(suint Hour, suint Min, suint Sec)
-    {
-      if(isDate(Hour, Min, Sec))
-      {
-        hour = Hour;
-        min = Min;
-        sec = Sec;
-        return true;
-      }
-      return false;
-    }
-    bool updateByCommand(String s)
-    {
-      if (!isFormat(s))
-        return false;
-      
-      suint Day = s.toInt(s.substring(0,1));
-      suint Month = s.toInt(s.substring(4,5);
-      return update(Day, Month, 2023);
-    }
-
-};
-
-class Cdate
-{
-
-};
+// FIX 2026: moved after the definition of `date` (was declared before it existed).
+date currentDate={1,10,2023,17,30,10};
 
 #endif
-

@@ -58,7 +58,8 @@ Previews are rendered from the EasyEDA Standard sources in `hardware/easyeda/`. 
 
 ### Repository layout
 ```
-firmware/scheduled-alarm/   Arduino sketch (.ino) and headers
+firmware/scheduled-alarm/   Corrected 2026 Arduino sketch (.ino) and headers
+firmware/original-2023/     Original sources as archived (did not compile)
   secrets.example.h         Wi-Fi credentials template (copy to secrets.h)
 hardware/easyeda/           EasyEDA Standard sources (schematic, two PCB revisions)
 hardware/pcb/               PCB previews
@@ -70,7 +71,7 @@ hardware/pcb/               PCB previews
 3. Copy `firmware/scheduled-alarm/secrets.example.h` to `secrets.h` and fill in `WIFI_SSID` and `WIFI_PASSWORD` (`secrets.h` is git-ignored).
 4. Upload, open the serial monitor at 115200 baud and type `help`.
 
-Note: the sketch is a snapshot of work in progress. The custom `date`/`time` classes in `definitions.h` are unfinished and the sketch has not been verified to compile as archived. The command terminator expected by `readCommand()` is `\n` followed by `\r`.
+Note: `firmware/scheduled-alarm/` is the corrected 2026 version (compiles; verified with PlatformIO, nodemcuv2); `firmware/original-2023/` is the original as archived (did not compile). See `firmware/CHANGES.md`. The command terminator expected by `readCommand()` is `\n` followed by `\r`.
 
 ### Credits
 Designed and developed by Elías Álvarez at Universidad Católica "Nuestra Señora de la Asunción" (Paraguay), 2023.
@@ -109,7 +110,7 @@ Componentes según el diseño EasyEDA: NodeMCU V2, módulo RTC DS3231, 3 sensore
 Ver los enlaces "Demo 1" y "Demo 2" arriba.
 
 ### Primeros pasos
-Instalar el Arduino IDE con el soporte ESP8266 y la librería `NTPClient`; copiar `secrets.example.h` a `secrets.h` con la red Wi-Fi; cargar el sketch y abrir el monitor serie a 115200 baudios. El sketch es una instantánea en desarrollo y no se verificó que compile tal como está archivado.
+Instalar el Arduino IDE con el soporte ESP8266 y la librería `NTPClient`; copiar `secrets.example.h` a `secrets.h` con la red Wi-Fi; cargar el sketch y abrir el monitor serie a 115200 baudios. `firmware/scheduled-alarm/` es la versión corregida de 2026 (compila; verificada con PlatformIO, nodemcuv2); `firmware/original-2023/` es el original tal como se archivó (no compilaba). Ver `firmware/CHANGES.md`.
 
 ### Créditos
 Diseño y desarrollo: Elías Álvarez, Universidad Católica "Nuestra Señora de la Asunción" (Paraguay), 2023. Licencia MIT.

@@ -7,7 +7,8 @@ void getNTP_Time()
 {
   
   //Serial.print("UTC time: ");
-  char flag = timeClient.update();
+  // FIX 2026: update() returns bool (true only when a new NTP packet was fetched); keep as bool.
+  bool flag = timeClient.update();
   time_t epochTime = timeClient.getEpochTime();
   struct tm *ptm =gmtime((time_t *)&epochTime);
   unsigned short int currentDay = ptm->tm_mday;
@@ -28,7 +29,10 @@ void getNTP_Time()
   Serial.println(currentMin);
   if(!flag) Serial.println("flag no");
   */
-  if (!flag){
+  // FIX 2026: the original condition (!flag) refreshed currentDate only when NO new NTP packet had
+  // arrived, and skipped it on the update that did sync. NTPClient keeps time locally between syncs,
+  // so refresh whenever the clock has been set at least once (otherwise the 1970 epoch would be used).
+  if (flag || timeClient.isTimeSet()){
     //Serial.println("XD");
     /*
     String currentDateX = String(currentDay) + "/" +String(currentMonth) + "/" +String(currentYear);
@@ -38,7 +42,7 @@ void getNTP_Time()
     Serial.print(":");
     Serial.println(currentMin);
     */
-    date result = {currentDay,currentMonth,currentYear,currentHour,currentMin,currentSec};
+    // FIX 2026: removed redundant re-declaration of `result` (shadowed the one above); same values.
     //printDate(result);
     currentDate=result;
   }
@@ -60,9 +64,10 @@ bool isDay(int number)
 bool isAValidDate(int day,int month)
 {
   if(isDay(day) && isMonth(month)){
-    if((month == 2 && day<=29)||
-      (month == 1 ||month ==  3|| month == 5 || month == 7 ||month == 8 ||month == 10 ||month == 12)&&(day<=31)|| 
-      (month == 4 ||month ==  6|| month == 9 || month == 11)&&(day<=30))
+    // FIX 2026: added explicit parentheses around each && group (-Wparentheses); logic unchanged.
+    if(((month == 2) && (day<=29))||
+      ((month == 1 ||month ==  3|| month == 5 || month == 7 ||month == 8 ||month == 10 ||month == 12)&&(day<=31))|| 
+      ((month == 4 ||month ==  6|| month == 9 || month == 11)&&(day<=30)))
       {
         return true;
       }
@@ -260,6 +265,7 @@ void readCommand()
             updateTime();
             printDate(currentDate);
             cindex=0;
+            command=""; // FIX 2026: clear the buffer (it is now built by appending)
             return;
           }
           break;
@@ -274,13 +280,18 @@ void readCommand()
       }
       Serial.println("");
       cindex = 0;
+      command = ""; // FIX 2026: clear the buffer (it is now built by appending)
     }
     else{
-      command[cindex]=inByteNow;
+      // FIX 2026: String::operator[] cannot grow a String (writing past its length is silently
+      // discarded), so `command` stayed empty and no command was ever recognised. Append instead.
+      command+=inByteNow;
       if(cindex<COMMAND_MAX)
         cindex++;
-      else
+      else{
         cindex=0;
+        command="";
+      }
     }
   }
   
@@ -371,6 +382,8 @@ bool verifyAlarm()
   
   dupleInt ctime={currentDate.hour,currentDate.min};
   
+  // FIX 2026: leftover debug prints commented out (they ran on every loop() pass and flooded the serial console).
+  /*
   if(timeOrder(alarmON,alarmOFF))
     Serial.println("ON<OFF");
   if(timeOrder(alarmOFF,alarmON))
@@ -379,6 +392,7 @@ bool verifyAlarm()
     Serial.println("ON<ctime<OFF");
   if((timeOrder(ctime,alarmOFF) || timeOrder(alarmON,ctime)))
     Serial.println("ctime<OFF || ON<cTime");
+  */
   
   if(
     (timeOrder(alarmON,alarmOFF) &&(timeOrder(alarmON,ctime) && timeOrder(ctime,alarmOFF)))
